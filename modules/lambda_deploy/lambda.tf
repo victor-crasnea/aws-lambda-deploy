@@ -9,11 +9,4 @@ resource "aws_lambda_function" "deploy" {
   tracing_config  {
     mode = "PassThrough"
   }
-  tags = {
-    Name        = "Deploy function"
-    Environment = var.environment
-    Project     = var.project_name
-    Group       = var.group_name
-    Country     = var.country_code
-  }
 }

@@ -13,13 +13,6 @@ data "aws_iam_policy_document" "assume_policy" {
 resource "aws_iam_role" "deploy" {
   name = "lambda_deploy"
   assume_role_policy = data.aws_iam_policy_document.assume_policy.json
-  tags = {
-    Name        = "Lambda deploy role"
-    Environment = var.environment
-    Project     = var.project_name
-    Group       = var.group_name
-    Country     = var.country_code
-  }
 }
 
 resource "aws_iam_role_policy_attachment" "full_access" {
