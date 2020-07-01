@@ -24,14 +24,21 @@ pipeline {
         // rollout the new version
         stage('Rollout the new version'){
             environment {
-               LAMBDA_FUNCTION_NAME = sh(script: 'terraform output lambda_function_name', , returnStdout: true).trim()
-               LAMBDA_VERSION = sh(script: 'terraform output lambda_version', , returnStdout: true).trim()
-               LAMBDA_STEPS = 10
-               LAMBDA_INTERVAL = 10
-
+                LAMBDA_FUNCTION_NAME = sh(script: 'terraform output lambda_function_name', , returnStdout: true).trim()
+                LAMBDA_VERSION = sh(script: 'terraform output lambda_version', , returnStdout: true).trim()
+                LAMBDA_STEPS = 10
+                LAMBDA_INTERVAL = 10
+                CURRENT_VERSION = sh(script: "aws lambda get-alias --function-name test --name prod | jq -r '.FunctionVersion'", , returnStdout: true).trim()
             }
             steps {
-                sh 'cd /terraform/jenkins && python3 rollout.py'
+
+                script {
+                    if (env.CURRENT_VERSION != env.LAMBDA_VERSION) {
+                        sh 'cd /terraform/jenkins && python3 rollout.py'
+                    } else {
+                        echo 'Lambda version is already in production'
+                    }
+                }
             }
         }
     }
