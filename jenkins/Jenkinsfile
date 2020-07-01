@@ -12,6 +12,7 @@ pipeline {
             steps {
                 sh 'tfswitch && terraform init'
                 sh 'zip -jr modules/lambda_test/files/test.zip modules/lambda_test/files/test.py'
+                sh 'zip -jr modules/lambda_deploy/files/deploy.zip modules/lambda_deploy/files/deploy.py'
             }
         }
         // generate new lambda version
