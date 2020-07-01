@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    environment{
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_DEFAULT_REGION="eu-central-1"
+    }
+
+    stages {
+        // init terraform
+        stage('Init') {
+            steps {
+                sh 'tfswitch && terraform init'
+                sh 'zip -jr modules/lambda_test/files/test.zip modules/lambda_test/files/test.py'
+            }
+        }
+        // generate new lambda version
+        stage('Apply') {
+            steps {
+                sh 'terraform apply -auto-approve'
+            }
+        }
+        // rollout the new version
+        stage('Rollout the new version'){
+            environment {
+               LAMBDA_FUNCTION_NAME = sh(script: 'terraform output lambda_function_name', , returnStdout: true).trim()
+               LAMBDA_VERSION = sh(script: 'terraform output lambda_version', , returnStdout: true).trim()
+               LAMBDA_STEPS = 10
+               LAMBDA_INTERVAL = 10
+
+            }
+            steps {
+                sh 'cd /terraform/jenkins && python3 rollout.py'
+            }
+        }
+    }
+}
